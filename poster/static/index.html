@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Spark</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        #poster {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Social Spark</h1>
+    <form id="posterForm">
+        <label for="productDescription">Product Description:</label>
+        <textarea id="productDescription" name="product_description" rows="4" placeholder="Describe the product"></textarea>
+
+        <label for="taglineDescription">Tagline Description:</label>
+        <textarea id="taglineDescription" name="tagline_description" rows="2" placeholder="Describe the tagline"></textarea>
+
+        <button type="submit">Generate Poster</button>
+    </form>
+
+    <div id="status-message"></div>
+
+    <div id="result">
+        <img id="poster" src="" alt="Generated Poster will appear here">
+    </div>
+
+    <script>
+        document.getElementById("posterForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const productDescription = document.getElementById("productDescription").value;
+            const taglineDescription = document.getElementById("taglineDescription").value;
+
+            const statusMessage = document.getElementById("status-message");
+            statusMessage.innerHTML = 'Poster generation is in progress. You will be notified once it\'s ready.';
+
+            const response = await fetch("/generate_poster/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    product_description: productDescription,
+                    tagline_description: taglineDescription,
+                }),
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const img = document.getElementById("poster");
+                img.src = URL.createObjectURL(blob);
+
+                statusMessage.innerHTML = '';
+            } else {
+                alert("Failed to generate poster. Please try again.");
+                statusMessage.innerHTML = '';
+            }
+        });
+    </script>
+
+</body>
+</html>

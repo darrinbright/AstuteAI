@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloggerAI</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            /* background-image: url('images/background.jpg');*/
+            background-size: cover;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Georgia', serif;
+            color: #2C3E50;
+        }
+        label, button {
+            display: block;
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        textarea, input, button {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #2C3E50;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1A242F;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        img {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .blog-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BloggerAI</h1>
+        <textarea id="blogInput" rows="4" placeholder="Enter the blog topic..."></textarea>
+
+        <button onclick="generateBlog()">Generate Blog</button>
+
+        <div id="output">
+            <img id="image" src="" alt="Generated Image" />
+            <p id="blogContent" class="blog-title"></p>
+        </div>
+    </div>
+
+    <script>
+        async function generateBlog() {
+            const blogInput = document.getElementById("blogInput").value;
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/generate_blog", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ blog_input: blogInput, image_input: blogInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                // Display the image and generated blog content
+                document.getElementById("image").src = data.image;
+                document.getElementById("blogContent").innerText = data.blog_content;
+            } catch (error) {
+                console.error("Error generating blog:", error);
+                document.getElementById("blogContent").innerText = "Error generating blog. Please try again.";
+            }
+        }
+    </script>
+</body>
+</html>
