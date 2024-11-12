@@ -23,13 +23,11 @@ nltk.download('stopwords')
 load_dotenv()  
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# FastAPI setup
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("static/index.html")
+    return FileResponse("index.html")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,7 +57,6 @@ def translateentolang(text, target_lang):
     translated_text = translator.translate(text, src=source_lang, dest=target_lang)
     return translated_text.text
 
-# Load LLM function
 def load_llm(max_tokens):
     try:
         logger.info("Initializing ChatGenerativeGemini model with Google API key.")
@@ -69,7 +66,6 @@ def load_llm(max_tokens):
         logger.error(f"Error loading ChatGenerativeGemini model: {str(e)}")
         raise
 
-# Get image URL function from Pexels API
 def get_src_original_url(query):
     url = 'https://api.pexels.com/v1/search'
     headers = {
@@ -102,7 +98,6 @@ def get_src_original_url(query):
         logger.error(f"Error fetching image from Pexels API: {str(e)}")
         raise
 
-# Clean content function
 def clean_content(content):
     return re.sub(r'\*+', '', content)
 
@@ -111,13 +106,13 @@ def preprocess_text(text):
     text = re.sub(r'[^\w\s]', '', text)
     tokens = word_tokenize(text)
     filtered_words = [word for word in tokens if word not in stopwords.words('english')]
-    return ' '.join("#"+filtered_words)
+    return ' '.join(f"{word}" for word in filtered_words)
 
-# Keyword extraction function using TF-IDF
 def extract_keywords(text, n=10):
     vectorizer = TfidfVectorizer(max_features=n)
     X = vectorizer.fit_transform([text])
-    return vectorizer.get_feature_names_out().tolist()
+    keywords = vectorizer.get_feature_names_out().tolist()
+    return [f"{keyword}" for keyword in keywords]
 
 @app.post("/generate_blog")
 def generate_blog(request_body: BlogInput):
@@ -148,17 +143,15 @@ def generate_blog(request_body: BlogInput):
         logger.error(f"Error generating blog content: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate blog content.")
 
-    # Process and extract keywords from the generated blog content
     processed_content = preprocess_text(blog_content)
     keywords = extract_keywords(processed_content)
     logger.info(f"Extracted Keywords: {keywords}")
 
-    # Translate the content if necessary
     target_lang = language(lang_choice)
     if target_lang != 'en':
         blog_content = translateentolang(blog_content, target_lang)
 
-    title = f"Insights on {blog_input.title()}"
+    title = f"{blog_input.title()}"
 
     if blog_content:
         return JSONResponse(content={

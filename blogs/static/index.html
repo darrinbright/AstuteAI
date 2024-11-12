@@ -5,38 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloggerAI</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('static/Assets/fonts/PPTelegraf-Regular.otf');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            /* background-image: url('images/background.jpg');*/
-            background-size: cover;
-            color: #333;
+            box-sizing: border-box;
+            font-family: 'CustomFont', sans-serif;
+        }
+        
+        body {
+            background-image: url("Assets/Background.png");
+            background-size: 100%;
+            min-width: 100vh;
         }
         .container {
             max-width: 600px;
             margin: 50px auto;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(25, 25, 25, 0.9);
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(127, 0, 255, 0.5);
         }
         h1 {
             font-size: 2em;
             font-weight: bold;
-            color: #333;
+            color: #FFF;
             text-align: center;
             margin-bottom: 20px;
-            font-family: 'Georgia', serif;
-            color: #2C3E50;
+            font-family: 'CustomFont', serif;
         }
         label, button {
             display: block;
             margin-top: 15px;
             font-size: 1.1em;
-            color: #333;
+            background: linear-gradient(45deg, #a855f7, #ff8c00);
         }
-        textarea, input, button {
+        input, select, button {
             width: 100%;
             padding: 10px;
             font-size: 1em;
@@ -79,19 +89,37 @@
 <body>
     <div class="container">
         <h1>BloggerAI</h1>
-        <textarea id="blogInput" rows="4" placeholder="Enter the blog topic..."></textarea>
+
+        <label for="blog-input">Enter your product description:</label>
+        <input type="text" id="blog-input" required>
+
+        <label for="lang-choice">Select Language:</label>
+        <select id="lang-choice" required>
+            <option value="1">Hindi</option>
+            <option value="2">Bengali</option>
+            <option value="3">Telugu</option>
+            <option value="4">Marathi</option>
+            <option value="5">Tamil</option>
+            <option value="6">Urdu</option>
+            <option value="7">Gujarati</option>
+            <option value="8">Kannada</option>
+            <option value="9">Malayalam</option>
+            <option value="10" selected>English</option>
+        </select>
 
         <button onclick="generateBlog()">Generate Blog</button>
 
         <div id="output">
             <img id="image" src="" alt="Generated Image" />
             <p id="blogContent" class="blog-title"></p>
+            <p><strong>Extracted keywords</strong> <span id="keywords"></span></p> <br>
         </div>
     </div>
 
     <script>
         async function generateBlog() {
-            const blogInput = document.getElementById("blogInput").value;
+            const blogInput = document.getElementById("blog-input").value;
+            const langChoice = document.getElementById("lang-choice").value;
 
             try {
                 const response = await fetch("http://127.0.0.1:8000/generate_blog", {
@@ -99,7 +127,10 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ blog_input: blogInput, image_input: blogInput })
+                    body: JSON.stringify({
+                        blog_input: blogInput,
+                        lang_choice: langChoice
+                    })
                 });
 
                 if (!response.ok) {
@@ -107,13 +138,14 @@
                 }
 
                 const data = await response.json();
-                
-                // Display the image and generated blog content
+
                 document.getElementById("image").src = data.image;
                 document.getElementById("blogContent").innerText = data.blog_content;
+                document.getElementById("keywords").innerText = data.keywords.join(", ");
             } catch (error) {
                 console.error("Error generating blog:", error);
                 document.getElementById("blogContent").innerText = "Error generating blog. Please try again.";
+                document.getElementById("keywords").innerText = ""; 
             }
         }
     </script>
